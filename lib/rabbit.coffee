@@ -9,7 +9,11 @@ placeEqual = (a, b) ->
     a.position.column == b.position.column
 
 placeToString = (place) ->
-  "#{place.filepath}::#{place.position.row}:#{place.position.column}"
+  filename = place.filepath.split('/').pop()
+  "#{filename}::#{place.position.row}:#{place.position.column}"
+
+makePlace = (filepath, point) ->
+  return filepath: filepath, position: {row: point.row, column: point.column}
 
 module.exports = Rabbit =
   rabbitView: null
@@ -34,7 +38,12 @@ module.exports = Rabbit =
       console.log 'Observing editor', editor.getPath()
       editor.onDidChangeCursorPosition (data) =>
         return if data.textChanged
+        oldPlace = makePlace editor.getPath(), data.oldBufferPosition
+        newPlace = makePlace editor.getPath(), data.newBufferPosition
+        @push oldPlace
         @push newPlace
+
+
 
   deactivate: ->
     # @modalPanel.destroy()
@@ -45,6 +54,7 @@ module.exports = Rabbit =
     rabbitViewState: @rabbitView.serialize()
 
   go: (place) ->
+    console.log 'GO', placeToString(place)
     atom.workspace.open(place.filepath, {activatePane: true})
     atom.workspace.getActiveTextEditor().setCursorBufferPosition place.position
 
@@ -57,6 +67,7 @@ module.exports = Rabbit =
     @go @queue.currentPlace()
 
   push: (position) ->
+    console.log 'Push', placeToString(position)
     @queue.push position
     @toggle()
 

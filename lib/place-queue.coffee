@@ -6,7 +6,9 @@ abs = (x) ->
   return -1 * x
 
 placeToString = (place) ->
-  "#{place.filepath}::#{place.position.row}:#{place.position.column}"
+  filename = place.filepath.split('/').pop()
+  "#{filename}::#{place.position.row}:#{place.position.column}"
+
 
 defaults =
   maxDepth: 20
@@ -33,6 +35,7 @@ class PlaceQueue
   constructor: (options={})->
     @positionStack = []
     @currentIndex = 0
+    @previousIndex = null
     @maxDepth = options.maxDepth || defaults.maxDepth
     @rowThreshold = options.rowThreshold ? defaults.rowThreshold
     @columnThreshold = options.columnThreshold ? defaults.columnThreshold
@@ -40,13 +43,23 @@ class PlaceQueue
   toString: ->
     return '' + (placeToString(p) for p in @positionStack)
 
+
+  areEqual: (oldPlace, newPlace) ->
+    return false unless oldPlace? and newPlace?
+    return false if oldPlace.filepath != newPlace.filepath
+    return false if abs(oldPlace.position.row - newPlace.position.row) > @rowThreshold
+    return false if abs(oldPlace.position.column - newPlace.position.column) > @columnThreshold
+    return true
+
+
   down: ->
     if @currentIndex == @positionStack.length - 1
       console.log "Already at bottom of stack, can't go down any more."
       return false
     else
+      @previousIndex = @currentIndex
       @currentIndex++
-      console.log 'Going down to', @currentIndex, @positionStack[@currentIndex]
+      console.log "Going down to #{@currentIndex} #{placeToString(@positionStack[@currentIndex])}"
       return true
 
   up: ->
@@ -54,12 +67,16 @@ class PlaceQueue
       console.log "Already at top of stack, can't go up any more."
       return false
     else
+      @previousIndex = @currentIndex
       @currentIndex--
-      console.log 'Going up to', @currentIndex, @positionStack[@currentIndex]
+      console.log "Going up to #{@currentIndex} #{placeToString(@positionStack[@currentIndex])}"
       return true
 
   currentPlace: ->
     return @positionStack[@currentIndex]
+
+  previousPlace: ->
+    return @positionStack[@previousIndex]
 
   ###
   @param position (obj) {filepath:, position: Point}
@@ -67,18 +84,14 @@ class PlaceQueue
   push: (place) ->
     unless place?
       throw Error("Must not push null or undefined position.")
-    currentPos = @currentPlace()
 
-    unless !currentPos? or \
-        place.filepath != currentPos.filepath or \
-        abs(place.position.row - currentPos.position.row) > @rowThreshold or \
-        abs(place.position.column - currentPos.position.column) > @columnThreshold
+    if @areEqual(place, @currentPlace()) or @areEqual(place, @previousPlace())
       return
 
+    # if @currentIndex != 0
+    #   @positionStack.splice(0, @currentIndex)
+    #   @currentIndex = 0
 
-    if @currentIndex != 0
-      @positionStack.splice(0, @currentIndex)
-      @currentIndex = 0
     # We're actually 'pushing' to the front of the queue, for ease of computation.
     @positionStack.unshift place
     if @positionStack.length > @maxDepth
