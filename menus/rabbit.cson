@@ -1,0 +1,38 @@
+# See https://atom.io/docs/latest/hacking-atom-package-word-count#menus for more details
+'context-menu':
+  'atom-text-editor': [
+    {
+      'label': 'Rabbit Toggle'
+      'command': 'rabbit:toggle'
+    },
+    {
+      'label': 'Rabbit Up'
+      'command': 'rabbit:up'
+    },
+    {
+      'label': 'Rabbit Down'
+      'command': 'rabbit:down'
+    },
+  ]
+'menu': [
+  {
+    'label': 'Packages'
+    'submenu': [
+      'label': 'Rabbit'
+      'submenu': [
+        {
+          'label': 'Toggle'
+          'command': 'rabbit:toggle'
+        },
+        {
+          'label': 'Up'
+          'command': 'rabbit:up'
+        },
+        {
+          'label': 'Down'
+          'command': 'rabbit:down'
+        },
+      ]
+    ]
+  }
+]
