@@ -37,7 +37,7 @@ describe 'PlaceQueue', ->
     pq = null
     place = null
     beforeEach ->
-      place = filepath: 'a/b', position: new Point(row:1, column:5)
+      place = filepath: 'a/b', position: {row:1, column:5}
       pq = new PlaceQueue()
       pq.push place
 
@@ -69,8 +69,8 @@ describe 'PlaceQueue', ->
     place1 = null
     place2 = null
     beforeEach ->
-      place1 = filepath: 'a/b', position: new Point(row:1, column:5)
-      place2 = filepath: 'b/c', position: new Point(row:5, column:2)
+      place1 = filepath: 'a/b', position: {row:1, column:5}
+      place2 = filepath: 'b/c', position: {row:5, column:2}
       pq = new PlaceQueue()
       pq.push place1
       pq.push place2
@@ -168,3 +168,14 @@ describe 'PlaceQueue', ->
       pq.push p3
       expect(pq.positionStack.length).toBe(3)
       expect(pq.currentPlace()).toBe(p3)
+
+    it 'should discard above positions when pushing while in the stack', ->
+      p4 = filepath: 'a/b', position: {row:50, column:1}
+      pq.down()
+      pq.push p4
+      expect(pq.positionStack.length).toBe(3)
+      expect(pq.currentPlace()).toBe(p4)
+      pq.up()
+      expect(pq.currentPlace()).toBe(p4)
+      pq.down()
+      expect(pq.currentPlace()).toBe(p2)

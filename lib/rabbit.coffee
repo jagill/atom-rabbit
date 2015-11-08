@@ -2,16 +2,6 @@
 PlaceQueue = require './place-queue'
 {CompositeDisposable, TextEditor} = require 'atom'
 
-placeEqual = (a, b) ->
-  return false unless a? and b?
-  return a.filepath == b.filepath and
-    a.position.row == b.position.row and
-    a.position.column == b.position.column
-
-placeToString = (place) ->
-  filename = place.filepath.split('/').pop()
-  "#{filename}::#{place.position.row}:#{place.position.column}"
-
 makePlace = (path, point) ->
   return {
     filepath: path
@@ -45,7 +35,6 @@ module.exports = Rabbit =
         oldPlace = makePlace editor.getPath(), data.oldBufferPosition
         newPlace = makePlace editor.getPath(), data.newBufferPosition
         if !@queue.areEqual(oldPlace, newPlace)
-          console.log "Moving from #{placeToString(oldPlace)} to #{placeToString(newPlace)}"
           @push oldPlace
           @push newPlace
 
@@ -69,7 +58,6 @@ module.exports = Rabbit =
     rabbitViewState: @rabbitView.serialize()
 
   go: (place) ->
-    console.log 'GO', placeToString(place)
     atom.workspace.open place.filepath,
       activatePane: true
       initialLine: place.position.row
@@ -84,9 +72,8 @@ module.exports = Rabbit =
     @go @queue.currentPlace()
 
   push: (position) ->
-    console.log 'Push', placeToString(position)
     @queue.push position
-    @toggle()
+    # @toggle()
 
   toggle: ->
     console.log @queue.toString()

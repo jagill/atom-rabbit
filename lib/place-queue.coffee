@@ -61,7 +61,7 @@ class PlaceQueue
 
   down: ->
     if @currentIndex == @positionStack.length - 1
-      console.log "Already at bottom of stack, can't go down any more."
+      # console.log "Already at bottom of stack, can't go down any more."
       return false
     else
       @previousIndex = @currentIndex
@@ -71,7 +71,7 @@ class PlaceQueue
 
   up: ->
     if @currentIndex == 0
-      console.log "Already at top of stack, can't go up any more."
+      # console.log "Already at top of stack, can't go up any more."
       return false
     else
       @previousIndex = @currentIndex
@@ -93,14 +93,13 @@ class PlaceQueue
       throw Error("Must not push null or undefined position.")
 
     if @areEqual(place, @currentPlace()) or @areEqual(place, @previousPlace())
-      console.log "#{placeToString(place)} is equal to current or previous."
       return
 
-    console.log "PUSH #{placeToString(place)}"
-
-    # if @currentIndex != 0
-    #   @positionStack.splice(0, @currentIndex)
-    #   @currentIndex = 0
+    # If we are in the middle of the stack during the push, discard everything
+    # above us.
+    if @currentIndex != 0
+      @positionStack.splice(0, @currentIndex)
+      @currentIndex = 0
 
     # We're actually 'pushing' to the front of the queue, for ease of computation.
     @positionStack.unshift place
