@@ -6,14 +6,14 @@ abs = (x) ->
   return -1 * x
 
 placeToString = (place) ->
+  return 'null' unless place?
   filename = place.filepath.split('/').pop()
   "#{filename}::#{place.position.row}:#{place.position.column}"
 
 
 defaults =
   maxDepth: 20
-  rowThreshold: 2
-  columnThreshold: 2
+  threshold: 2
 
 
 ###
@@ -37,20 +37,27 @@ class PlaceQueue
     @currentIndex = 0
     @previousIndex = null
     @maxDepth = options.maxDepth || defaults.maxDepth
-    @rowThreshold = options.rowThreshold ? defaults.rowThreshold
-    @columnThreshold = options.columnThreshold ? defaults.columnThreshold
+    @threshold = options.threshold ? defaults.threshold
 
   toString: ->
     return '' + (placeToString(p) for p in @positionStack)
 
+  ###
+  We want to ignore changes that (within a single file):
+    1. Only move a couple columns
+    2. Only move a couple rows
+    3. Move from the end of one row to the beginning of the next row
+      (check index)
+    4. Move up a row to the end of the next row, if the starting column is
+      greater than the end column of the new row.
 
+    We'll cheat and only consider filepath and row, even though the column
+    change might be significant.
+  ###
   areEqual: (oldPlace, newPlace) ->
     return false unless oldPlace? and newPlace?
     return false if oldPlace.filepath != newPlace.filepath
-    return false if abs(oldPlace.position.row - newPlace.position.row) > @rowThreshold
-    return false if abs(oldPlace.position.column - newPlace.position.column) > @columnThreshold
-    return true
-
+    return abs(oldPlace.position.row - newPlace.position.row) <= @threshold
 
   down: ->
     if @currentIndex == @positionStack.length - 1
@@ -86,7 +93,10 @@ class PlaceQueue
       throw Error("Must not push null or undefined position.")
 
     if @areEqual(place, @currentPlace()) or @areEqual(place, @previousPlace())
+      console.log "#{placeToString(place)} is equal to current or previous."
       return
+
+    console.log "PUSH #{placeToString(place)}"
 
     # if @currentIndex != 0
     #   @positionStack.splice(0, @currentIndex)

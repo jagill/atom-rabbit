@@ -1,6 +1,6 @@
 # RabbitView = require './rabbit-view'
 PlaceQueue = require './place-queue'
-{CompositeDisposable} = require 'atom'
+{CompositeDisposable, TextEditor} = require 'atom'
 
 placeEqual = (a, b) ->
   return false unless a? and b?
@@ -12,8 +12,11 @@ placeToString = (place) ->
   filename = place.filepath.split('/').pop()
   "#{filename}::#{place.position.row}:#{place.position.column}"
 
-makePlace = (filepath, point) ->
-  return filepath: filepath, position: {row: point.row, column: point.column}
+makePlace = (path, point) ->
+  return {
+    filepath: path
+    position: {row: point.row, column: point.column}
+  }
 
 module.exports = Rabbit =
   rabbitView: null
@@ -34,14 +37,26 @@ module.exports = Rabbit =
     @subscriptions.add atom.commands.add 'atom-workspace', 'rabbit:toggle': => @toggle()
     @subscriptions.add atom.commands.add 'atom-workspace', 'rabbit:up': => @up()
     @subscriptions.add atom.commands.add 'atom-workspace', 'rabbit:down': => @down()
+
     @subscriptions.add atom.workspace.observeTextEditors (editor) =>
       console.log 'Observing editor', editor.getPath()
       editor.onDidChangeCursorPosition (data) =>
         return if data.textChanged
         oldPlace = makePlace editor.getPath(), data.oldBufferPosition
         newPlace = makePlace editor.getPath(), data.newBufferPosition
-        @push oldPlace
-        @push newPlace
+        if !@queue.areEqual(oldPlace, newPlace)
+          console.log "Moving from #{placeToString(oldPlace)} to #{placeToString(newPlace)}"
+          @push oldPlace
+          @push newPlace
+
+    @subscriptions.add atom.workspace.observePanes (pane) =>
+      @subscriptions.add pane.onDidChangeActiveItem (item) =>
+        # This can be undefined if the pane closes.
+        return unless item and item instanceof TextEditor
+        editor = atom.workspace.getActiveTextEditor()
+        pos = editor.getCursorBufferPosition()
+        console.log "Active pane changed, now in #{editor.getPath()}::#{pos}"
+        @push makePlace editor.getPath(), pos
 
 
 
@@ -55,8 +70,10 @@ module.exports = Rabbit =
 
   go: (place) ->
     console.log 'GO', placeToString(place)
-    atom.workspace.open(place.filepath, {activatePane: true})
-    atom.workspace.getActiveTextEditor().setCursorBufferPosition place.position
+    atom.workspace.open place.filepath,
+      activatePane: true
+      initialLine: place.position.row
+      initialColumn: place.position.column
 
   down: ->
     @queue.down()
