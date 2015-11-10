@@ -1,11 +1,11 @@
 {
   "name": "rabbit",
   "main": "./lib/rabbit",
-  "version": "0.0.0",
-  "description": "A short description of your package",
+  "version": "0.0.1",
+  "description": "Rabbit remembers when you jump around you project, letting you backtrack.",
   "keywords": [
   ],
-  "repository": "https://github.com/atom/rabbit",
+  "repository": "https://github.com/jagill/atom-rabbit",
   "license": "MIT",
   "engines": {
     "atom": ">=1.0.0 <2.0.0"

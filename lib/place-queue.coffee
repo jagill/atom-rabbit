@@ -15,22 +15,6 @@ defaults =
   maxDepth: 20
   threshold: 2
 
-
-###
-        oldPlace =
-          position: data.oldBufferPosition
-          filepath: editor.getPath()
-        newPlace =
-          position: data.newBufferPosition
-          filepath: editor.getPath()
-        console.log 'Changed position from', placeToString(oldPlace), 'to', placeToString(newPlace)
-        # cursor, oldBufferPosition, textChanged
-        if abs(oldPlace.position.row - newPlace.position.row) > @rowThreshold or \
-            abs(oldPlace.position.column - newPlace.position.column) < @columnThreshold
-          console.log 'Pushing changed position'
-
-###
-
 class PlaceQueue
   constructor: (options={})->
     @positionStack = []
@@ -60,7 +44,7 @@ class PlaceQueue
     return abs(oldPlace.position.row - newPlace.position.row) <= @threshold
 
   down: ->
-    if @currentIndex == @positionStack.length - 1
+    if @currentIndex >= @positionStack.length - 1
       # console.log "Already at bottom of stack, can't go down any more."
       return false
     else

@@ -131,7 +131,7 @@ describe 'PlaceQueue', ->
     pq = null
 
     beforeEach ->
-      pq = new PlaceQueue threshold: 3, threshold: 3
+      pq = new PlaceQueue threshold: 3
       pq.push p1
       pq.push p2
       pq.push p3
@@ -179,3 +179,22 @@ describe 'PlaceQueue', ->
       expect(pq.currentPlace()).toBe(p4)
       pq.down()
       expect(pq.currentPlace()).toBe(p2)
+
+  describe 'on startup', ->
+    p1 = filepath: 'a/b', position: {row:1, column:1}
+    p2 = filepath: 'a/b', position: {row:10, column:10}
+    it 'should not do anything on down', ->
+      pq = new PlaceQueue()
+      pq.down()
+      expect(pq.currentPlace()).toBeFalsy()
+
+    it 'should not do anything on up', ->
+      pq = new PlaceQueue()
+      pq.up()
+      expect(pq.currentPlace()).toBeFalsy()
+
+    it 'should not have its state messed up by an early down', ->
+      pq = new PlaceQueue()
+      pq.down()
+      pq.push(p1)
+      expect(pq.currentPlace()).toBe(p1)

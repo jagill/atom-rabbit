@@ -58,6 +58,7 @@ module.exports = Rabbit =
     rabbitViewState: @rabbitView.serialize()
 
   go: (place) ->
+    return unless place
     atom.workspace.open place.filepath,
       activatePane: true
       initialLine: place.position.row
