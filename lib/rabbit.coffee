@@ -43,11 +43,10 @@ module.exports = Rabbit =
         # This can be undefined if the pane closes.
         return unless item and item instanceof TextEditor
         editor = atom.workspace.getActiveTextEditor()
+        return unless editor
         pos = editor.getCursorBufferPosition()
         console.log "Active pane changed, now in #{editor.getPath()}::#{pos}"
         @push makePlace editor.getPath(), pos
-
-
 
   deactivate: ->
     # @modalPanel.destroy()
